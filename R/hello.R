@@ -1,8 +1,9 @@
 X <- data.frame(x1 = runif(50), x2 = runif(50))
 
 y <- 3 + 1 * X$x1 + 2 * X$x2
-
+dados <- data.frame(y, X)
 generalreg <- function(data, mu_formula, var_formula = NULL) {
+  attach(data)
   y <- dados[, 1]
   X <- dados[, -1]
   if (is.null(var_formula)) {
@@ -12,20 +13,23 @@ generalreg <- function(data, mu_formula, var_formula = NULL) {
     sigma <- var_formula(X)
     cov_sigma <- matrix(diag(sigma), ncol = length(y))
   }
+  parameters <- definir_parametros(as.character(formula[[3]]), data = iris)$parametros
+
+  for (i in 1:length(parameters)) {
+    assign(parameters[i], runif(1))
+  }
+  par <- NULL
+  for (i in 1:length(parameters)) {
+    par[i] <- parse(text = parameters[1]) |> eval() # initial points
+  }
 
 
-  par <- c(runif(ncol(X) + 1), sigma)
-
-  dados <- data.frame(y, X)
 
 
   logvero <- function(par) {
     y <- dados[, 1]
     X <- dados[, -1]
-    beta0 <- par[1]
-    beta1 <- par[2]
-    beta2 <- par[3]
-    mu <- parse(text = mu_formula) |> eval()
+    mu <- mu_formula[[3]] ~ eval()
     n <- length(y)
     sol1 <- function() {
       return(((t(matrix(c(y - mu))) %*% cov_sigma) %*% matrix(c(y - mu))))
@@ -33,9 +37,9 @@ generalreg <- function(data, mu_formula, var_formula = NULL) {
     det1 <- function() {
       return(det(as.matrix(cov_sigma)))
     }
-    TT1 <- sol1()
-    TT2 <- det1()
-    return(1 / 2 * sum(log(TT2)) + 1 / 2 * sum(TT1))
+    quadratic_part <- sol1()
+    determinant <- det1()
+    return(1 / 2 * sum(log(determinant)) + 1 / 2 * sum(quadratic_part))
   }
 
   nlminb(par, logvero,
@@ -48,6 +52,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL) {
 
 
 
+generalreg(dados, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2)
 
 
 
@@ -58,7 +63,4 @@ generalreg <- function(data, mu_formula, var_formula = NULL) {
 
 
 
-
-
-
-generalreg(dados, mu_formula = "beta0 + beta1 * X$x1 + beta2 * X$x2")
+formula <- mpg ~ alfa + 1 / (beta * disp)
