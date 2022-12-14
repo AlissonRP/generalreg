@@ -13,15 +13,14 @@ generalreg <- function(data, mu_formula, var_formula = NULL) {
     sigma <- var_formula(X)
     cov_sigma <- matrix(diag(sigma), ncol = length(y))
   }
-  parameters <- definir_parametros(as.character(formula[[3]]), data = iris)$parametros
+  parameters <- definir_parametros(as.character(mu_formula[[3]]), data = data)$parametros
+  par = runif(length(parameters))
 
-  for (i in 1:length(parameters)) {
-    assign(parameters[i], runif(1))
-  }
-  par <- NULL
-  for (i in 1:length(parameters)) {
-    par[i] <- parse(text = parameters[1]) |> eval() # initial points
-  }
+#  par <- NULL
+ # for (i in 1:length(parameters)) {
+  #  par[i] <- parse(text = parameters[i]) |> eval() # initial points
+
+  #}
 
 
 
@@ -29,7 +28,10 @@ generalreg <- function(data, mu_formula, var_formula = NULL) {
   logvero <- function(par) {
     y <- dados[, 1]
     X <- dados[, -1]
-    mu <- mu_formula[[3]] ~ eval()
+    for (i in 1:length(parameters)) {
+      assign(parameters[i], par[i])
+    }
+    mu <- parse(text = mu_formula[[3]]) |> eval()
     n <- length(y)
     sol1 <- function() {
       return(((t(matrix(c(y - mu))) %*% cov_sigma) %*% matrix(c(y - mu))))
@@ -42,12 +44,12 @@ generalreg <- function(data, mu_formula, var_formula = NULL) {
     return(1 / 2 * sum(log(determinant)) + 1 / 2 * sum(quadratic_part))
   }
 
-  nlminb(par, logvero,
-    gradient = NULL, hessian = NULL,
-    scale = 1, control = list(),
-    lower = c(-Inf, -Inf, -Inf, 0, 0),
-    upper = c(Inf, Inf, Inf, Inf, Inf)
-  )$par
+  c(nlminb(par, logvero,
+         gradient = NULL, hessian = NULL,
+         scale = 1, control = list(),
+         lower = c(-Inf, -Inf, -Inf, 0, 0),
+         upper = c(Inf, Inf, Inf, Inf, Inf)
+  )$par, par)
 }
 
 
