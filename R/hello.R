@@ -1,6 +1,6 @@
 X <- data.frame(x1 = runif(50), x2 = runif(50))
 
-y <- 3 + 1 * X$x1 + 2 * X$x2
+y <- 20 * exp(3*X$x1)
 dados <- data.frame(y, X)
 generalreg <- function(data, mu_formula, var_formula = NULL) {
   attach(data)
@@ -31,7 +31,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL) {
     for (i in 1:length(parameters)) {
       assign(parameters[i], par[i])
     }
-    mu <- parse(text = mu_formula[[3]]) |> eval()
+    mu = parse(text = as.character(mu_formula)[3]) |> eval()
     n <- length(y)
     sol1 <- function() {
       return(((t(matrix(c(y - mu))) %*% cov_sigma) %*% matrix(c(y - mu))))
@@ -44,17 +44,17 @@ generalreg <- function(data, mu_formula, var_formula = NULL) {
     return(1 / 2 * sum(log(determinant)) + 1 / 2 * sum(quadratic_part))
   }
 
-  c(nlminb(par, logvero,
+  nlminb(par, logvero,
          gradient = NULL, hessian = NULL,
          scale = 1, control = list(),
          lower = c(-Inf, -Inf, -Inf, 0, 0),
          upper = c(Inf, Inf, Inf, Inf, Inf)
-  )$par, par)
+  )$par
 }
 
 
 
-generalreg(dados, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2)
+generalreg(dados, mu_formula = y ~ beta0*exp(beta1 * x1))
 
 
 
@@ -64,5 +64,3 @@ generalreg(dados, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2)
 
 
 
-
-formula <- mpg ~ alfa + 1 / (beta * disp)
