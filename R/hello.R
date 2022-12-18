@@ -1,11 +1,17 @@
 X <- data.frame(x1 = runif(50), x2 = runif(50))
 
-y <- 2  + 3*X$x1  + 2*X$x2
+y <- 2 + 3 * X$x1 + 2 * X$x2
 dados <- data.frame(y, X)
 generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
+  dist = tolower(dist)
   attach(data)
-  y <- dados[, 1]
-  X <- dados[, -1]
+  data <- data[, c(
+    which(colnames(data) == mu_formula[[2]]),
+    which(colnames(data) != mu_formula[[2]])
+  )]
+  y <- data[, 1] %>%
+    unlist()
+  X <- data[, definir_parametros(as.character(mu_formula[[3]]), data = data)$covar]
   if (is.null(var_formula)) {
     sigma <- rep(rpois(1, lambda = 15), length(y))
     cov_sigma <- matrix(diag(sigma), ncol = length(sigma))
@@ -17,7 +23,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
   par <- runif(length(parameters))
 
 
-model <- c()
+  model <- c()
 
 
   logvero <- function(par) {
@@ -34,12 +40,12 @@ model <- c()
     det1 <- function() {
       return(det(as.matrix(cov_sigma)))
     }
-    quadratic_part <- sapply(sol1(), \(x) ifelse(x==0, x+0.001, x))
+    quadratic_part <- sapply(sol1(), \(x) ifelse(x == 0, x + 0.001, x))
     determinant <- det1()
-    return(1 / 2 * sum(log(determinant)) + 1 / 2 * sum(quadratic_part))
+    return(1 / 2 * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part)))
   }
 
-  coefficients = nlminb(par, logvero,
+  coefficients <- nlminb(par, logvero,
     gradient = NULL, hessian = NULL,
     scale = 1, control = list(),
     lower = c(-Inf, -Inf, -Inf, 0, 0),
@@ -48,16 +54,18 @@ model <- c()
 
   model$coefficients <- coefficients
   model$names <- parameters
-  model_presentation = data.frame(model$names, model$coefficients)
-  names(model_presentation) =  c("Parameters", "Estimates")
+  model_presentation <- data.frame(model$names, model$coefficients)
+  names(model_presentation) <- c("Parameters", "Estimates")
   return(model_presentation)
-
 }
 
+X <- data.frame(x1 = runif(50), x2 = runif(50))
 
 
+y <- 2 / exp(5*X$x1) + log(3*X$x2)
 
-generalreg(dados, mu_formula = y ~ beta0 + beta1 * x1 + beta2*x2)
+dados <- data.frame(y, X)
 
+generalreg(dados, mu_formula = y ~ beta0 / exp(beta1*x1) + log(beta2*x2), dist='normal')
 
 
