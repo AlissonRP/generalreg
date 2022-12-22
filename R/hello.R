@@ -1,7 +1,4 @@
-X <- data.frame(x1 = runif(50), x2 = runif(50))
 
-y <- 2 + 3 * X$x1 + 2 * X$x2
-dados <- data.frame(y, X)
 generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
   dist = tolower(dist)
   attach(data)
@@ -39,7 +36,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
     mu <- parse(text = as.character(mu_formula)[3]) |> eval()
     n <- length(y)
     sol1 <- function() {
-      return(((t(matrix(c(y - mu))) %*% cov_sigma) %*% matrix(c(y - mu))))
+      return(((t(matrix(c(y - mu))) %*% solve(cov_sigma, tol = 1e-10000)) %*% matrix(c(y - mu))))
     }
     quadratic_part <- sapply(sol1(), \(x) ifelse(x == 0, x + 0.001, x))
     determinant <- det(as.matrix(cov_sigma))
@@ -60,17 +57,19 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
   }
 
 
-  model_presentation <- data.frame(model$names, model$coefficients)
-  names(model_presentation) <- c("Parameters", "Estimates")
+  model_presentation <- data.frame(model$names, model$coefficients, par)
+  names(model_presentation) <- c("Parameters", "Estimates", "initial")
   detach(data)
   return(model_presentation)
 }
 
-dados = data.frame(X=c(405.65,498.75,567.25,618.3,681.45,405.65,498.75,567.25,618.3,681.45,681.45,681.45,681.45,681.45,681.45,681.45,681.45,681.45),Y=c(90.5,161.6,246.743,422.936,868.662,113.383,207.65,309.514,460.686,972.383,999.633,1034,1047,1072.022,1133.287,1141.883,1266.290,1169.767))
+X <- data.frame(x1 = runif(50), x2 = runif(50))
+
+y <- 2 + 3 * X$x1 + 2 * X$x2
+dados <- data.frame(y, X)
 
 
-
-generalreg(dados, mu_formula = Y~beta1*exp(beta2*X), dist='normal', var_formula = t ~ sigma1 * exp(sigma2*X))
+generalreg(dados, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='logistic')
 
 
 
