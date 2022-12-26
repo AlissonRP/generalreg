@@ -51,7 +51,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
 
   muhat = function(){
     for (i in 1:length(coefficients)) {
-      assign(parameters[i], coefficients) #initial values of parameters in formula
+      assign(parameters[i], coefficients[i]) #initial values of parameters in formula
     }
     return(suppressWarnings(parse(text = as.character(mu_formula)[3]) |> eval()))
   }
@@ -63,6 +63,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
   model$names <- parameters
   model$serie <- y
   model$X <- X
+  model$residuals = y - model$fitted.values
   model$rank <- ncol(X)
 
   if (is.null(var_formula)){
@@ -102,7 +103,8 @@ data <- data.frame(y, X)
 
 mu_formula = y ~ beta0 + beta1*x1 + beta2*x2
 var_formula = t ~ sigma * x1 + 3
-teste = generalreg(data, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='logistic', var_formula = t ~ sigma * x1 + 3)
+teste = generalreg(data, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='normal')
+
 
 
 
