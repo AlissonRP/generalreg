@@ -20,21 +20,21 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
     par <- runif(length(parameters))
     for (i in 1:length(cov_par)) {
       assign(cov_par[i], par[i])
-    }
+    } # initial values for parameters of var_formula
     sigma <- parse(text = as.character(var_formula)[3]) |> eval()
     cov_sigma <- matrix(diag(sigma), ncol = length(y))
   }
 
-  #return(parameters)
+  #return(sigma)
   model <- c()
+
 
 
   logvero <- function(par) {
     for (i in 1:length(parameters)) {
-      assign(parameters[i], par[i])
+      assign(parameters[i], par[i]) #initial values of parameters in formula
     }
     mu <- parse(text = as.character(mu_formula)[3]) |> eval()
-    n <- length(y)
     sol1 <- function() {
       return(((t(matrix(c(y - mu))) %*% solve(cov_sigma, tol = 1e-10000)) %*% matrix(c(y - mu))))
     }
@@ -42,7 +42,6 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
     determinant <- det(as.matrix(cov_sigma))
     return(1 / 2 * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part)))
   }
-
   coefficients <- nlminb(par, logvero,
     gradient = NULL, hessian = NULL,
     scale = 1, control = list(),
@@ -50,26 +49,47 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
     upper = c(Inf, Inf, Inf, Inf, Inf)
   )$par
 
+  muhat = function(){
+    for (i in 1:length(coefficients)) {
+      assign(parameters[i], coefficients) #initial values of parameters in formula
+    }
+    return(parse(text = as.character(mu_formula)[3]) |> eval())
+  }
+
+  detach(data)
   model$coefficients <- coefficients
+  class(model) <- c(if (is.numeric(y)) "mlm", "lm")
   model$names <- parameters
+  model$fitted.values <- muhat
+  model$serie <- y
+  model$X <- X
+  model$rank <- ncol(X)
+
   if (is.null(var_formula)){
     model$names <- c(parameters, 'sigma')
   }
 
-
   model_presentation <- data.frame(model$names, model$coefficients, par)
   names(model_presentation) <- c("Parameters", "Estimates", "initial")
-  detach(data)
-  return(model_presentation)
+
+
+
+  model$call <- match.call()
+
+
+
 }
 
 X <- data.frame(x1 = runif(50), x2 = runif(50))
 
 y <- 2 + 3 * X$x1 + 2 * X$x2
-dados <- data.frame(y, X)
+data <- data.frame(y, X)
+
+mu_formula = y ~ beta0 + beta1*x1 + beta2*x2
+var_formula = t ~ sigma * x1 + 3
+teste = generalreg(data, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='logistic', var_formula = t ~ sigma * x1 + 3)
 
 
-generalreg(dados, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='logistic')
 
 
 
