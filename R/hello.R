@@ -53,14 +53,14 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
     for (i in 1:length(coefficients)) {
       assign(parameters[i], coefficients) #initial values of parameters in formula
     }
-    return(parse(text = as.character(mu_formula)[3]) |> eval())
+    return(suppressWarnings(parse(text = as.character(mu_formula)[3]) |> eval()))
   }
-
+  model$fitted.values <- muhat()
   detach(data)
+
   model$coefficients <- coefficients
   class(model) <- c(if (is.numeric(y)) "mlm", "lm")
   model$names <- parameters
-  model$fitted.values <- muhat
   model$serie <- y
   model$X <- X
   model$rank <- ncol(X)
@@ -76,6 +76,21 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
 
   model$call <- match.call()
 
+
+
+
+  print_fit <- function(digits = max(3L, getOption("digits") - 3L)) {
+    cat("\nCall:\n",
+        paste(deparse(model$call), sep = "\n", collapse = "\n"), "\n\n",
+        sep = ""
+    )
+    cat("Coefficients:\n")
+    print.default(format(coefficients, digits = digits),
+                  print.gap = 2L, quote = FALSE
+    )
+  }
+
+  model
 
 
 }
