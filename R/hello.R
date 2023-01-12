@@ -1,3 +1,24 @@
+#' generalreg
+#'
+#' @param mu_formula a model formula including variables and parameters
+#' @param var_formula a  model formula for the diagonal of covariance matrix
+#' @param data A data frame in which to evaluate the variables in \code{formula} and \code{formula_var}.
+#' Can also be a list or an environment, but not a matrix
+#' @param dist Inform the distribution of your data, at the moment it can be 'normal' or 'logistic'
+#' @return generalreg returns an object of class `lm`
+#' For more information on class `lm` type ?lm on your console
+#'
+ #' @examples
+#' library(generalreg)
+#' X <- data.frame(x1 = runif(50), x2 = runif(50))
+#' y <- 2 + 3 * X$x1 + 2 * X$x2
+#' data <- data.frame(y, X)
+#' generalreg(data, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='normal')
+#'
+#'
+#'
+#'generalreg(data = mtcars, mu_formula = mpg ~ alfa+1/(beta*disp))
+#' @export
 
 generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
   dist = tolower(dist)
@@ -57,30 +78,29 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
   }
   model$fitted.values <- muhat()
   detach(data)
-
-  model$coefficients <- coefficients
   class(model) <- c(if (is.numeric(y)) "mlm", "lm")
+  model$coefficients <- coefficients
+  names(coefficients) <- parameters
   model$names <- parameters
   model$serie <- y
   model$X <- X
   model$residuals = y - model$fitted.values
   model$rank <- ncol(X)
-
   if (is.null(var_formula)){
     model$names <- c(parameters, 'sigma')
+    names(coefficients)[is.na(names(coefficients))] <- 'sigma'
+
   }
 
-  model_presentation <- data.frame(model$names, model$coefficients, par)
-  names(model_presentation) <- c("Parameters", "Estimates", "initial")
+
+  #model_presentation <- data.frame(model$names, model$coefficients, par)
+  #names(model_presentation) <- c("Parameters", "Estimates", "initial")
 
 
 
   model$call <- match.call()
 
-
-
-
-  print_fit <- function(digits = max(3L, getOption("digits") - 3L)) {
+  print.lm <- function(digits = max(3L, getOption("digits") - 3L)) {
     cat("\nCall:\n",
         paste(deparse(model$call), sep = "\n", collapse = "\n"), "\n\n",
         sep = ""
@@ -91,19 +111,14 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
     )
   }
 
-  model
 
+
+
+
+  model
 
 }
 
-X <- data.frame(x1 = runif(50), x2 = runif(50))
-
-y <- 2 + 3 * X$x1 + 2 * X$x2
-data <- data.frame(y, X)
-
-mu_formula = y ~ beta0 + beta1*x1 + beta2*x2
-var_formula = t ~ sigma * x1 + 3
-teste = generalreg(data, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='normal')
 
 
 

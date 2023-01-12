@@ -1,3 +1,4 @@
+# 'choose_dist
 choose_dist <- function(dist, y) {
   if (dist == "normal") {
     g <- \(y) -y / 2

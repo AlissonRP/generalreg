@@ -1,3 +1,6 @@
+#' definir_parametros
+#'
+#'
 definir_parametros <- function(char, data) {
   termos <- char %>%
     stringr::str_replace_all(" ", "") %>%
