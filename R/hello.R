@@ -78,7 +78,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
   }
   model$fitted.values <- muhat()
   detach(data)
-  class(model) <- c(if (is.numeric(y)) "mlm", "lm")
+  class(model) <- c("generalreg","lm")
   model$coefficients <- coefficients
   names(coefficients) <- parameters
   model$names <- parameters
@@ -112,6 +112,12 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
   }
 
 
+setMethod("print", "generalreg",
+          signature(object = "print"),
+            function(obj){
+              cat("aaaah funciona pfr")
+            })
+
 
 
 
@@ -125,9 +131,15 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
 
 
 
+#X = data.frame(x1 = runif(50), x2 = runif(50))
+#y = 2 + 3 * X$x1 + 5 * X$x2
+
+#data = data.frame(y, X)
 
 
+#teste = lm(y ~ . , data)
 
+#teste |> summary()
 
 
 
