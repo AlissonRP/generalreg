@@ -22,6 +22,6 @@ choose_dist <- function(dist, y, alpha = NULL, beta = NULL) {
       #stop("contaminated normal distribution requires alpha and beta parameters")
     #}
     #g <- \(y) log(((1 - alpha) * exp(- y / 2)) + (alpha * beta^(d / 2)) * exp(-y / 2 * beta))
-  }
+  #}
   return(g(y))
 }

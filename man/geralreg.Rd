@@ -4,7 +4,14 @@
 \alias{geralreg}
 \title{geralreg}
 \usage{
-geralreg(data, mu_formula, var_formula = NULL, dist = "normal")
+geralreg(
+  data,
+  mu_formula,
+  var_formula = NULL,
+  dist = "normal",
+  alpha = NULL,
+  beta = NULL
+)
 }
 \description{
 geralreg
