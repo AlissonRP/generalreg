@@ -4,7 +4,7 @@
 #'
 #' @export
 #'
-geralreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
+geralreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", alpha = NULL, beta = NULL) {
   call <- match.call()
   mf <- match.call(expand.dots = FALSE)
   m <- match(c("data"), names(mf), 0L)
@@ -51,7 +51,7 @@ geralreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
     }
     quadratic_part <- sapply(sol1(), \(x) ifelse(x == 0, x + 0.001, x))
     determinant <- det(as.matrix(cov_sigma))
-    return(1 / 2 * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part)))
+    return(1 / 2 * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
   }
   coefficients <- nlminb(par, logvero,
                          gradient = NULL, hessian = NULL,

@@ -6,4 +6,8 @@ print.geralreg <-
   {
     cat("\nCall:", deparse(x$call, width.cutoff = floor(getOption("width") * 0.85)), "", sep = "\n")
 
+    cat("\nCoefficients:\n")
+    print(structure((as.vector((x$coefficients))),
+                    .Names = x$names))
+
   }

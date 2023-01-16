@@ -15,7 +15,9 @@ summary.geralreg <-
       print(structure((as.vector((res))),
                       .Names = c("Min", "1Q", "Median", "3Q", "Max")))
 
-      cat("\nCoefficients:\n", x$coefficients)
-
+      cat("\nCoefficients:\n")
+      estimates = x$coefficients
+      names  = x$names
+      data.frame(row.names = names, Estimate = estimates)
 
   }
