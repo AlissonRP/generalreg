@@ -4,7 +4,14 @@
 \alias{generalreg}
 \title{generalreg}
 \usage{
-generalreg(data, mu_formula, var_formula = NULL, dist = "normal")
+generalreg(
+  data,
+  mu_formula,
+  var_formula = NULL,
+  dist = "normal",
+  alpha = NULL,
+  beta = NULL
+)
 }
 \arguments{
 \item{data}{A data frame in which to evaluate the variables in \code{formula} and \code{formula_var}.
@@ -31,6 +38,9 @@ data <- data.frame(y, X)
 generalreg(data, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='normal')
 
 
+y <- 2 / 2*X$x1
+data <- data.frame(y, X)
+generalreg(data, mu_formula = y ~ beta0 / beta1*x1  , dist='normal')
 
 generalreg(data = mtcars, mu_formula = mpg ~ alfa+1/(beta*disp))
 }

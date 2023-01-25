@@ -16,11 +16,25 @@
 #' generalreg(data, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='normal')
 #'
 #'
+#' y <- 2 / 2*X$x1
+#' data <- data.frame(y, X)
+#' generalreg(data, mu_formula = y ~ beta0 / beta1*x1  , dist='normal')
 #'
 #'generalreg(data = mtcars, mu_formula = mpg ~ alfa+1/(beta*disp))
 #' @export
 
-generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
+#' generalreg
+#'
+#'
+#'
+#' @export
+#'
+generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", alpha = NULL, beta = NULL) {
+  call <- match.call()
+  mf <- match.call(expand.dots = FALSE)
+  m <- match(c("data"), names(mf), 0L)
+  mf <- mf[c(1L, m)]
+  mf$drop.unused.levels <- TRUE
   dist = tolower(dist)
   attach(data)
   data <- data[, c(
@@ -31,6 +45,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
     unlist()
   X <- data[, definir_parametros(as.character(mu_formula[[3]]), data = data)$covar]
   parameters <- definir_parametros(as.character(mu_formula[[3]]), data = data)$parametros
+
   if (is.null(var_formula)) {
     sigma <- rep(rpois(1, lambda = rpois(1, lambda = 3)), length(y))
     cov_sigma <- matrix(diag(sigma), ncol = length(sigma))
@@ -47,7 +62,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
   }
 
   #return(sigma)
-  model <- c()
+
 
 
 
@@ -61,68 +76,42 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal") {
     }
     quadratic_part <- sapply(sol1(), \(x) ifelse(x == 0, x + 0.001, x))
     determinant <- det(as.matrix(cov_sigma))
-    return(1 / 2 * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part)))
+    return(1 / 2 * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
   }
   coefficients <- nlminb(par, logvero,
-    gradient = NULL, hessian = NULL,
-    scale = 1, control = list(),
-    lower = c(-Inf, -Inf, -Inf, 0, 0),
-    upper = c(Inf, Inf, Inf, Inf, Inf)
+                         gradient = NULL, hessian = NULL,
+                         scale = 1, control = list(),
+                         lower = c(-Inf, -Inf, -Inf, 0, 0),
+                         upper = c(Inf, Inf, Inf, Inf, Inf)
   )$par
 
+  fit = list()
   muhat = function(){
     for (i in 1:length(coefficients)) {
       assign(parameters[i], coefficients[i]) #initial values of parameters in formula
     }
     return(suppressWarnings(parse(text = as.character(mu_formula)[3]) |> eval()))
   }
-  model$fitted.values <- muhat()
+  fit$fitted.values <- muhat()
   detach(data)
-  class(model) <- c("generalreg","lm")
-  model$coefficients <- coefficients
+
+  fit$coefficients <- coefficients
+  fit$call <- call
   names(coefficients) <- parameters
-  model$names <- parameters
-  model$serie <- y
-  model$X <- X
-  model$residuals = y - model$fitted.values
-  model$rank <- ncol(X)
+  fit$names <- parameters
+  fit$serie <- y
+  fit$X <- X
+  fit$residuals = y - fit$fitted.values
+  fit$rank <- ncol(X)
   if (is.null(var_formula)){
-    model$names <- c(parameters, 'sigma')
+    fit$names <- c(parameters, 'sigma')
     names(coefficients)[is.na(names(coefficients))] <- 'sigma'
 
   }
 
 
-  #model_presentation <- data.frame(model$names, model$coefficients, par)
-  #names(model_presentation) <- c("Parameters", "Estimates", "initial")
-
-
-
-  model$call <- match.call()
-
-  print.lm <- function(digits = max(3L, getOption("digits") - 3L)) {
-    cat("\nCall:\n",
-        paste(deparse(model$call), sep = "\n", collapse = "\n"), "\n\n",
-        sep = ""
-    )
-    cat("Coefficients:\n")
-    print.default(format(coefficients, digits = digits),
-                  print.gap = 2L, quote = FALSE
-    )
-  }
-
-
-setMethod("print", "generalreg",
-          signature(object = "print"),
-            function(obj){
-              cat("aaaah funciona pfr")
-            })
-
-
-
-
-  model
-
+  class(fit) <- "generalreg"
+  return(fit)
 }
 
 
@@ -130,16 +119,6 @@ setMethod("print", "generalreg",
 
 
 
-
-#X = data.frame(x1 = runif(50), x2 = runif(50))
-#y = 2 + 3 * X$x1 + 5 * X$x2
-
-#data = data.frame(y, X)
-
-
-#teste = lm(y ~ . , data)
-
-#teste |> summary()
 
 
 

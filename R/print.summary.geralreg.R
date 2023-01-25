@@ -1,8 +1,8 @@
-#' @export print.summary.geralreg
+#' @export print.summary.generalreg
 #' @export
 #'
 #'
-print.summary.geralreg <-
+print.summary.generalreg <-
   function(x, digits = max(3, getOption("digits") - 3), ...)
   {
     cat("\nCall:\n",
@@ -15,5 +15,8 @@ print.summary.geralreg <-
 
     cat("\nCoefficients:\n")
     print((x$coefficients))
+
+    cat("---\n")
+    cat("Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1")
 
   }

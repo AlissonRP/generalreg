@@ -36,7 +36,12 @@ This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
 library(generalreg)
-## basic example code
+X <- data.frame(x1 = runif(50), x2 = runif(50))
+y <- 2 + 3 * X$x1 + 2 * X$x2
+data <- data.frame(y, X)
+fit <- generalreg(data, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='normal')
+
+fit |> summary()
 ```
 
 

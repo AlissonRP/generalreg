@@ -1,7 +1,7 @@
-#' @export print.geralreg
+#' @export print.generalreg
 #' @export
 
-print.geralreg <-
+print.generalreg <-
   function(x, digits = max(3, getOption("digits") - 3), ...)
   {
     cat("\nCall:", deparse(x$call, width.cutoff = floor(getOption("width") * 0.85)), "", sep = "\n")
