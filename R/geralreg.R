@@ -1,35 +1,10 @@
-#' generalreg
-#'
-#' @param mu_formula a model formula including variables and parameters
-#' @param var_formula a  model formula for the diagonal of covariance matrix
-#' @param data A data frame in which to evaluate the variables in \code{formula} and \code{formula_var}.
-#' Can also be a list or an environment, but not a matrix
-#' @param dist Inform the distribution of your data, at the moment it can be 'normal' or 'logistic'
-#' @return generalreg returns an object of class `lm`
-#' For more information on class `lm` type ?lm on your console
-#'
- #' @examples
-#' library(generalreg)
-#' X <- data.frame(x1 = runif(50), x2 = runif(50))
-#' y <- 2 + 3 * X$x1 + 2 * X$x2
-#' data <- data.frame(y, X)
-#' generalreg(data, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='normal')
-#'
-#'
-#' y <- 2 / 2*X$x1
-#' data <- data.frame(y, X)
-#' generalreg(data, mu_formula = y ~ beta0 / beta1*x1  , dist='normal')
-#'
-#'generalreg(data = mtcars, mu_formula = mpg ~ alfa+1/(beta*disp))
-#' @export
-
-#' generalreg
+#' geralreg
 #'
 #'
 #'
 #' @export
 #'
-generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", alpha = NULL, beta = NULL) {
+geralreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", alpha = NULL, beta = NULL) {
   call <- match.call()
   mf <- match.call(expand.dots = FALSE)
   m <- match(c("data"), names(mf), 0L)
@@ -110,7 +85,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
   }
 
 
-  class(fit) <- "generalreg"
+  class(fit) <- "geralreg"
   return(fit)
 }
 
