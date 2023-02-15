@@ -11,10 +11,12 @@
  #' @examples
 #' library(generalreg)
 #' X <- data.frame(x1 = rnorm(1000), x2 = rnorm(1000), x3 = rnorm(1000))
-#' e = rt(1000, df = 9)
+#' #e = rt(1000, df = 3)
+#' e = rlogis(1000, scale = 3) # var = pi^2  / 3 * scale ^ 2
+#' e = rnorm(1000, sd = 3)
 #' y <- 2 + 3 * X$x1 + 7 * X$x2 + e
 #' data <- data.frame(y, X)
-#' generalreg(data, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2, dist='t')
+#' generalreg(data, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2, dist='logistic')
 #'
 #'
 #' y <- (1 / 2 * X$x1) + e
@@ -72,7 +74,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
       sol1 <- (matrix(t(c(y - mu))* (1 / sigma), ncol = length(y), byrow = F))  %*% matrix(c(y - mu))
       determinant <- det(as.matrix(sigma))
       quadratic_part <- sapply(sol1, \(x) ifelse(x == 0, x + 0.001, x))
-      return(1 / 2 * (length(mu)) * (log(determinant)) -  sum(-quadratic_part / 2))
+      return(1 / 2 * (length(mu)) * (log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
     } else {
       sol1 <- ((t(matrix(c(y - mu))) %*% solve(cov_sigma, tol = 1e-10000)) %*% matrix(c(y - mu)))
       quadratic_part <- sapply(sol1, \(x) ifelse(x == 0, x + 0.001, x))
