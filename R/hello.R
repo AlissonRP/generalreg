@@ -11,13 +11,13 @@
  #' @examples
 #' library(generalreg)
 #' X <- data.frame(x1 = rnorm(1000), x2 = rnorm(1000), x3 = rnorm(1000))
-#' e <- rnorm(1000, sd = 4)
+#' e = rt(1000, df = 9)
 #' y <- 2 + 3 * X$x1 + 7 * X$x2 + e
 #' data <- data.frame(y, X)
-#' generalreg(data, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2, dist='normal')
+#' generalreg(data, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2, dist='t')
 #'
 #'
-#' y <- 2 / 2*X$x1 + e
+#' y <- (1 / 2 * X$x1) + e
 #' data <- data.frame(y, X)
 #' generalreg(data, mu_formula = y ~ beta0 / beta1 * x1  , dist='normal')
 #'
@@ -62,7 +62,6 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
 
 
 
-
   logvero <- function(par) {
     parameters = c(parameters, "sigma")
     for (i in 1:(length(parameters) + 1)) {
@@ -78,7 +77,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
       sol1 <- ((t(matrix(c(y - mu))) %*% solve(cov_sigma, tol = 1e-10000)) %*% matrix(c(y - mu)))
       quadratic_part <- sapply(sol1, \(x) ifelse(x == 0, x + 0.001, x))
       determinant <- det(as.matrix(cov_sigma))
-      return(1 / 2 * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
+     return(1 / 2 * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
     }
   }
   coefficients <- nlminb(par, logvero,
