@@ -32,15 +32,20 @@ generalreg
 }
 \examples{
 library(generalreg)
-X <- data.frame(x1 = runif(50), x2 = runif(50))
-y <- 2 + 3 * X$x1 + 2 * X$x2
+X <- data.frame(x1 = rnorm(1000), x2 = rnorm(1000), x3 = rnorm(1000))
+#e = rt(1000, df = 3)
+#e = rlogis(1000, scale = 3) # var = pi^2  / 3 * scale ^ 2
+e = rnorm(1000, sd = 5)
+y <- 2 + 3 * X$x1 + 7 * X$x2 + e
 data <- data.frame(y, X)
-generalreg(data, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='normal')
+generalreg(data, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2, dist='normal')
 
 
-y <- 2 / 2*X$x1
+y <- (1 / 2 * X$x1) + e
 data <- data.frame(y, X)
-generalreg(data, mu_formula = y ~ beta0 / beta1*x1  , dist='normal')
+generalreg(data, mu_formula = y ~ beta0 / beta1 * x1  , dist='normal')
 
-generalreg(data = mtcars, mu_formula = mpg ~ alfa+1/(beta*disp))
+generalreg(data = mtcars, mu_formula = mpg ~ alfa + 1/ (beta * disp))
+
+
 }
