@@ -1,13 +1,13 @@
-library(stringr)
-formula = y ~ beta0 + beta1X1
 
 
-media = as.character(formula)[3] |> stringr::str_replace_all(" ", "") %>%
-  stringr::str_replace_all(stringr::fixed(")"), "+") %>%
-  stringr::str_replace_all(stringr::fixed("("), "+") %>%
-  stringr::str_split("[(*),(+),(\\-),(^),(\\/)]") %>%
-  unlist()
+extract_covariates = function(X_matrix, mu){
+covs = X_matrix |> names()
+teste = sapply(covs, \(x) covs |> stringr::str_replace(x, paste0("X$", x))) |> diag()
 
 
-media |>
-stringr::str_replace("X1", "X$X1")
+map_df <- data.frame(num=covs, nuc=teste)
+return (stringr::str_replace_all(as.character(mu)[3], setNames(map_df$nuc, map_df$num)))
+
+}
+
+

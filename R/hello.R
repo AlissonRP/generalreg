@@ -35,7 +35,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
   mf <- mf[c(1L, m)]
   mf$drop.unused.levels <- TRUE
   dist = tolower(dist)
-  attach(data)
+
   data <- data[, c(
     which(colnames(data) == mu_formula[[2]]),
     which(colnames(data) != mu_formula[[2]])
@@ -44,6 +44,8 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
     unlist()
   X <- data[, definir_parametros(as.character(mu_formula[[3]]), data = data)$covar]
   parameters <- definir_parametros(as.character(mu_formula[[3]]), data = data)$parametros
+
+  initial_mu = extract_covariates(X, mu_formula)
 
   if (is.null(var_formula)) {
     sigma <- rep(0.1, length(y))
@@ -56,8 +58,6 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
     for (i in 1:length(cov_par)) {
       assign(cov_par[i], par[i])
     } # initial values for parameters of var_formula
-    sigma <- parse(text = as.character(var_formula)[3]) |> eval()
-    cov_sigma <- matrix(diag(sigma), ncol = length(y))
   }
 
 
@@ -69,13 +69,15 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
     for (i in 1:(length(parameters) + 1)) {
       assign(parameters[i], par[i]) #initial values of parameters in formula
     }
-    mu <- parse(text = as.character(mu_formula)[3]) |> eval()
+    mu <- parse(text = initial_mu) |> eval()
     if (is.null(var_formula)) {
       sol1 <- (matrix(t(c(y - mu))* (1 / sigma), ncol = length(y), byrow = F))  %*% matrix(c(y - mu))
       determinant <- det(as.matrix(sigma))
       quadratic_part <- sapply(sol1, \(x) ifelse(x == 0, x + 0.001, x))
       return(1 / 2 * (length(mu)) * (log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
     } else {
+      sigma <- parse(text = as.character(var_formula)[3]) |> eval()
+      cov_sigma <- matrix(diag(sigma), ncol = length(y))
       sol1 <- ((t(matrix(c(y - mu))) %*% solve(cov_sigma, tol = 1e-10000)) %*% matrix(c(y - mu)))
       quadratic_part <- sapply(sol1, \(x) ifelse(x == 0, x + 0.001, x))
       determinant <- det(as.matrix(cov_sigma))
@@ -94,10 +96,10 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
     for (i in 1:length(coefficients)) {
       assign(parameters[i], coefficients[i]) #initial values of parameters in formula
     }
-    return(suppressWarnings(parse(text = as.character(mu_formula)[3]) |> eval()))
+    return(suppressWarnings(parse(text = initial_mu) |> eval()))
   }
   fit$fitted.values <- muhat()
-  detach(data)
+
   fit$parameters <- parameters
   fit$mu_formula <- mu_formula
   fit$initial <- par
