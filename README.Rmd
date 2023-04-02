@@ -36,12 +36,14 @@ This is a basic example which shows you how to solve a common problem:
 
 ```{r example}
 library(generalreg)
-X <- data.frame(x1 = runif(50), x2 = runif(50))
-y <- 2 + 3 * X$x1 + 2 * X$x2
+X <- data.frame(x1 = rnorm(1000), x2 = rnorm(1000), x3 = rnorm(1000))
+#e = rt(1000, df = 3)
+#e = rlogis(1000, scale = 3) # var = pi^2  / 3 * scale ^ 2
+e = rnorm(1000, sd = 5)
+y <- 2 + 3 * X$x1 + 7 * X$x2 + e
 data <- data.frame(y, X)
-fit <- generalreg(data, mu_formula = y ~ beta0 + beta1*x1 + beta2*x2, dist='normal')
+generalreg(data, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2, dist='normal')
 
-fit |> summary()
 ```
 
 

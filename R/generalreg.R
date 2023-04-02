@@ -10,10 +10,11 @@
 #'
  #' @examples
 #' library(generalreg)
+#' set.seed(3)
 #' X <- data.frame(x1 = rnorm(1000), x2 = rnorm(1000), x3 = rnorm(1000))
 #' #e = rt(1000, df = 3)
-#' #e = rlogis(1000, scale = 3) # var = pi^2  / 3 * scale ^ 2
-#' e = rnorm(1000, sd = 5)
+#' e = rlogis(1000, scale = 2, location = 3)
+#' #e = rnorm(1000, sd = 5)
 #' y <- 2 + 3 * X$x1 + 7 * X$x2 + e
 #' data <- data.frame(y, X)
 #' generalreg(data, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2, dist='normal')
@@ -42,7 +43,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
   )]
   y <- data[, 1] %>%
     unlist()
-  X <- data[, definir_parametros(as.character(mu_formula[[3]]), data = data)$covar]
+  X <- data[, -1]
   parameters <- definir_parametros(as.character(mu_formula[[3]]), data = data)$parametros
 
   initial_mu = extract_covariates(X, mu_formula)
