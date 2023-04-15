@@ -4,7 +4,7 @@
 #' @param var_formula a  model formula for the diagonal of covariance matrix
 #' @param data A data frame in which to evaluate the variables in \code{formula} and \code{formula_var}.
 #' Can also be a list or an environment, but not a matrix
-#' @param dist Inform the distribution of your data, at the moment it can be 'normal' or 'logistic'
+#' @param dist Inform the distribution of your data, can be: "normal", "logistic", "t" or "power exp"
 #' @return generalreg returns an object of class `lm`
 #' For more information on class `lm` type ?lm on your console
 #'
@@ -47,6 +47,8 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
   parameters <- definir_parametros(as.character(mu_formula[[3]]), data = data)$parametros
 
   initial_mu = extract_covariates(X, mu_formula)
+  initial_var = extract_covariates(X, var_formula)
+
 
   if (is.null(var_formula)) {
     sigma <- rep(0.1, length(y))
@@ -65,6 +67,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
 
 
 
+
   logvero <- function(par) {
     parameters = c(parameters, "sigma")
     for (i in 1:(length(parameters) + 1)) {
@@ -72,15 +75,15 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
     }
     mu <- parse(text = initial_mu) |> eval()
     if (is.null(var_formula)) {
-      sol1 <- (matrix(t(c(y - mu))* (1 / sigma), ncol = length(y), byrow = F))  %*% matrix(c(y - mu))
+      zi <- (matrix(t(c(y - mu))* (1 / sigma), ncol = length(y), byrow = F))  %*% matrix(c(y - mu))
       determinant <- det(as.matrix(sigma))
-      quadratic_part <- sapply(sol1, \(x) ifelse(x == 0, x + 0.001, x))
-      return(1 / 2 * (length(mu)) * (log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
+      quadratic_part <- sapply(zi, \(x) ifelse(x == 0, x + 0.001, x))
+      return((1 / 2) * (length(mu)) * (log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
     } else {
-      sigma <- parse(text = as.character(var_formula)[3]) |> eval()
+      sigma <- parse(text = initial_var) |> eval()
       cov_sigma <- matrix(diag(sigma), ncol = length(y))
-      sol1 <- ((t(matrix(c(y - mu))) %*% solve(cov_sigma, tol = 1e-10000)) %*% matrix(c(y - mu)))
-      quadratic_part <- sapply(sol1, \(x) ifelse(x == 0, x + 0.001, x))
+      zi <- ((t(matrix(c(y - mu))) %*% solve(cov_sigma, tol = 1e-10000)) %*% matrix(c(y - mu)))
+      quadratic_part <- sapply(zi, \(x) ifelse(x == 0, x + 0.001, x))
       determinant <- det(as.matrix(cov_sigma))
      return(1 / 2 * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
     }

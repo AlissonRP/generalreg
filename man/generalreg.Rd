@@ -21,7 +21,7 @@ Can also be a list or an environment, but not a matrix}
 
 \item{var_formula}{a  model formula for the diagonal of covariance matrix}
 
-\item{dist}{Inform the distribution of your data, at the moment it can be 'normal' or 'logistic'}
+\item{dist}{Inform the distribution of your data, can be: "normal", "logistic", "t" or "power exp"}
 }
 \value{
 generalreg returns an object of class `lm`
