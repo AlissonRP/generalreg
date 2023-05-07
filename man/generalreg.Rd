@@ -10,7 +10,8 @@ generalreg(
   var_formula = NULL,
   dist = "normal",
   alpha = NULL,
-  beta = NULL
+  beta = NULL,
+  start = NULL
 )
 }
 \arguments{
@@ -24,8 +25,7 @@ Can also be a list or an environment, but not a matrix}
 \item{dist}{Inform the distribution of your data, can be: "normal", "logistic", "t" or "power exp"}
 }
 \value{
-generalreg returns an object of class `lm`
-For more information on class `lm` type ?lm on your console
+generalreg returns an object of class `generalreg`
 }
 \description{
 generalreg
@@ -34,9 +34,9 @@ generalreg
 library(generalreg)
 set.seed(3)
 X <- data.frame(x1 = rnorm(1000), x2 = rnorm(1000), x3 = rnorm(1000))
-#e = rt(1000, df = 3)
-e = rlogis(1000, scale = 2, location = 3)
-#e = rnorm(1000, sd = 5)
+e = rt(1000, df = 3)
+e = rlogis(10000, scale = 2, location = 3)
+e = rnorm(1000, sd = 5)
 y <- 2 + 3 * X$x1 + 7 * X$x2 + e
 data <- data.frame(y, X)
 generalreg(data, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2, dist='normal')

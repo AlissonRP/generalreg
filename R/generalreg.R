@@ -5,16 +5,16 @@
 #' @param data A data frame in which to evaluate the variables in \code{formula} and \code{formula_var}.
 #' Can also be a list or an environment, but not a matrix
 #' @param dist Inform the distribution of your data, can be: "normal", "logistic", "t" or "power exp"
-#' @return generalreg returns an object of class `lm`
-#' For more information on class `lm` type ?lm on your console
+#' @return generalreg returns an object of class `generalreg`
+#'
 #'
  #' @examples
 #' library(generalreg)
 #' set.seed(3)
 #' X <- data.frame(x1 = rnorm(1000), x2 = rnorm(1000), x3 = rnorm(1000))
-#' #e = rt(1000, df = 3)
-#' e = rlogis(1000, scale = 2, location = 3)
-#' #e = rnorm(1000, sd = 5)
+#' e = rt(1000, df = 3)
+#' e = rlogis(10000, scale = 2, location = 3)
+#' e = rnorm(1000, sd = 5)
 #' y <- 2 + 3 * X$x1 + 7 * X$x2 + e
 #' data <- data.frame(y, X)
 #' generalreg(data, mu_formula = y ~ beta0 + beta1 * x1 + beta2 * x2, dist='normal')
@@ -29,7 +29,8 @@
 #'
 #' @export
 #'
-generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", alpha = NULL, beta = NULL) {
+generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal",
+                       alpha = NULL, beta = NULL, start = NULL) {
   call <- match.call()
   mf <- match.call(expand.dots = FALSE)
   m <- match(c("data"), names(mf), 0L)
@@ -65,7 +66,12 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
 
 
 
-
+  if(!is.null(start)){
+    if(length(par) != length(start)){
+      stop("start must be the same length as your parameter array")
+    }
+    par = start
+  }
 
 
   logvero <- function(par) {
@@ -73,6 +79,7 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
     for (i in 1:(length(parameters) + 1)) {
       assign(parameters[i], par[i]) #initial values of parameters in formula
     }
+
     mu <- parse(text = initial_mu) |> eval()
     if (is.null(var_formula)) {
       zi <- (matrix(t(c(y - mu))* (1 / sigma), ncol = length(y), byrow = F))  %*% matrix(c(y - mu))
@@ -85,15 +92,17 @@ generalreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", al
       zi <- ((t(matrix(c(y - mu))) %*% solve(cov_sigma, tol = 1e-10000)) %*% matrix(c(y - mu)))
       quadratic_part <- sapply(zi, \(x) ifelse(x == 0, x + 0.001, x))
       determinant <- det(as.matrix(cov_sigma))
-     return(1 / 2 * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
+     return((1 / 2) * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
     }
   }
   coefficients <- nlminb(par, logvero,
                          gradient = NULL, hessian = NULL,
                          scale = 1, control = list(),
                          lower = c(-Inf, -Inf, -Inf, 0, 0),
-                         upper = c(Inf, Inf, Inf, Inf, Inf)
-  )$par
+                         upper = c(Inf, Inf, Inf, Inf, Inf))$par
+
+
+
 
   fit = list()
   muhat = function(){
