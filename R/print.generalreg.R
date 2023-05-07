@@ -9,5 +9,9 @@ print.generalreg <-
     cat("\nCoefficients:\n")
     print(structure((as.vector((x$coefficients))),
                     .Names = x$names))
+    cat("\nInitial Values:\n")
+    print(structure((as.vector((x$initial))),
+                    .Names = x$names))
+
 
   }

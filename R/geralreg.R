@@ -46,10 +46,8 @@ geralreg <- function(data, mu_formula, var_formula = NULL, dist = "normal", alph
       assign(parameters[i], par[i]) #initial values of parameters in formula
     }
     mu <- parse(text = as.character(mu_formula)[3]) |> eval()
-    sol1 <- function() {
-      return(((t(matrix(c(y - mu))) %*% solve(cov_sigma, tol = 1e-10000)) %*% matrix(c(y - mu))))
-    }
-    quadratic_part <- sapply(sol1(), \(x) ifelse(x == 0, x + 0.001, x))
+    sol1 <- (matrix(t(c(y - mu))* (1 / sigma), ncol = length(y), byrow = F))  %*% matrix(c(y - mu))
+    quadratic_part <- sapply(sol1, \(x) ifelse(x == 0, x + 0.001, x))
     determinant <- det(as.matrix(cov_sigma))
     return(1 / 2 * sum(log(determinant)) -  sum(choose_dist(dist, quadratic_part, alpha, beta)))
   }
